@@ -1,0 +1,24 @@
+^C:\USERS\KEVIN\DESKTOP\PROGRAMMING\C\HC_COLLECTIONS\BUILD\CMAKEFILES\514F3A4E903100734C657DC56DCBABD0\CHECK.RULE
+setlocal
+cd C:\Users\kevin\Desktop\Programming\C\hc_collections\build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\ctest.exe" --output-on-failure --no-tests=ignore -C Debug
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^C:\USERS\KEVIN\DESKTOP\PROGRAMMING\C\HC_COLLECTIONS\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/kevin/Desktop/Programming/C/hc_collections -BC:/Users/kevin/Desktop/Programming/C/hc_collections/build --check-stamp-file C:/Users/kevin/Desktop/Programming/C/hc_collections/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -1,0 +1,117 @@
+#include "ut.h"
+#include "hc_collections/singly_linked_list.h"
+
+static int dataDestructorCount = 0;
+
+void data_destructor_func(void *pData)
+{
+    dataDestructorCount += *(int *)pData;
+}
+
+bool data_equality_func(void *pDataLeft, void *pDataRight)
+{
+    printf("%p <> %p, %d <> %d\n", pDataLeft, pDataRight, *(int *)pDataLeft, *(int *)pDataRight);
+    return *(int *)pDataLeft == *(int *)pDataRight;
+}
+
+int main(void)
+{
+    int fails = 0;
+    HC_SinglyLinkedList_t *pSentinel = hc_SLL_create();
+    HC_SinglyLinkedList_t *pBad = NULL;
+
+    fails += hc_SLLINTERNALUT();
+
+    fails += ut_assert(pSentinel != NULL, "SLL sentinelCreate");
+
+    fails += ut_assert(hc_SLL_destroy(&pSentinel, NULL) == true, "SLL destroy (good sentinel)");
+    fails += ut_assert(hc_SLL_destroy(NULL, NULL) == false, "SLL destroy (NULL sentinel)");
+    fails += ut_assert(hc_SLL_destroy(&pBad, NULL) == false, "SLL destroy (&NULL sentinel)");
+
+    pSentinel = hc_SLL_create();
+
+    int dummyData = 5;
+    HC_SinglyLinkedList_t *pNode = hc_SLL_nodeNew(&dummyData);
+    fails += ut_assert(pNode != NULL, "SLL nodeNew (good data)");
+    fails += ut_assert(hc_SLL_nodeNew(NULL) == NULL, "SLL nodeNew (NULL data)");
+    fails += ut_assert(*(int *)(pNode->pData) == dummyData, "SLL nodeNew pData assignment");
+
+    fails += ut_assert(hc_SLL_nodeAdd(&pSentinel, pNode) == true, "SLL nodeAdd (good node)");
+    fails += ut_assert(hc_SLL_nodeAdd(&pNode, pNode) == false, "SLL nodeAdd (non-sentinel)");
+    fails += ut_assert(hc_SLL_nodeAdd(NULL, pNode) == false, "SLL nodeAdd (NULL sentinel)");
+    fails += ut_assert(hc_SLL_nodeAdd(&pBad, pNode) == false, "SLL nodeAdd (&NULL sentinel)");
+    fails += ut_assert(hc_SLL_nodeAdd(&pSentinel, NULL) == false, "SLL nodeAdd (NULL node)");
+    fails += ut_assert(hc_SLL_nodeAdd(&pSentinel, hc_SLL_create()) == false, "SLL nodeAdd (sentinel node)");
+    fails += ut_assert(*(int *)(pSentinel->pNext->pData) == dummyData, "SLL nodeAdd added node data check");
+
+    fails += ut_assert(hc_SLL_destroy(&pSentinel, NULL) == true, "SLL destroy (good sentinel w/ added node)");
+
+    pSentinel = hc_SLL_create();
+
+    pNode = hc_SLL_nodeNew(&dummyData);
+
+    fails += ut_assert(hc_SLL_dataAdd(&pSentinel, &dummyData) == true, "SLL dataAdd (good data)");
+    fails += ut_assert(hc_SLL_dataAdd(&pNode, &dummyData) == false, "SLL dataAdd (non-sentinel)");
+    fails += ut_assert(hc_SLL_dataAdd(&pSentinel, NULL) == false, "SLL dataAdd (NULL data)");
+    fails += ut_assert(hc_SLL_dataAdd(&pNode, &dummyData) == false, "SLL dataAdd (non-sentinel)");
+    fails += ut_assert(hc_SLL_dataAdd(NULL, &dummyData) == false, "SLL dataAdd (NULL sentinel)");
+    fails += ut_assert(hc_SLL_dataAdd(&pBad, &dummyData) == false, "SLL dataAdd (&NULL sentinel)");
+
+    fails += ut_assert(hc_SLL_nodeRemove(&pSentinel, NULL) == false, "SLL nodeRemove (NULL node)");
+    fails += ut_assert(hc_SLL_nodeRemove(NULL, pNode) == false, "SLL nodeRemove (NULL sentinel)");
+    fails += ut_assert(hc_SLL_nodeRemove(&pBad, pNode) == false, "SLL nodeRemove (&NULL sentinel)");
+
+    fails += ut_assert(hc_SLL_nodeAdd(&pSentinel, pNode) == true, "SLL nodeAdd (good node)");
+    fails += ut_assert(hc_SLL_nodeRemove(&pNode, pNode) == false, "SLL nodeRemove (non-sentinel)");
+    fails += ut_assert(hc_SLL_nodeRemove(&pSentinel, pNode) == true, "SLL nodeRemove (good node)");
+    fails += ut_assert(hc_SLL_nodeRemove(&pSentinel, pNode) == false, "SLL nodeRemove (non-present node)");
+
+    fails += ut_assert(hc_SLL_nodeAdd(&pSentinel, pNode) == true, "SLL nodeAdd (good node duplicate)");
+    fails += ut_assert(hc_SLL_nodeAdd(&pSentinel, pNode) == true, "SLL nodeAdd (good node duplicate)");
+    fails += ut_assert(hc_SLL_nodeRemove(&pSentinel, pNode) == true, "SLL nodeRemove (good node duplicate)");
+    fails += ut_assert(hc_SLL_nodeRemove(&pSentinel, pNode) == true, "SLL nodeRemove (good node duplicate)");
+
+    fails += ut_assert(hc_SLL_dataRemove(&pSentinel, NULL, NULL) == false, "SLL dataRemove (good sent./NULL data/NULL comp. func.)");
+    fails += ut_assert(hc_SLL_dataRemove(NULL, &dummyData, NULL) == false, "SLL dataRemove (NULL sent./data/NULL comp. func.)");
+    fails += ut_assert(hc_SLL_dataRemove(&pBad, &dummyData, NULL) == false, "SLL dataRemove (&NULL sent./data/NULL comp. func.)");
+    fails += ut_assert(hc_SLL_dataRemove(&pNode, &dummyData, NULL) == false, "SLL dataRemove (non-sentinel)");
+
+    fails += ut_assert(hc_SLL_dataRemove(&pSentinel, &dummyData, NULL) == true, "SLL dataRemove (good sent./data/NULL comp. func.)");
+
+    fails += ut_assert(hc_SLL_dataAdd(&pSentinel, &dummyData) == true, "SLL dataAdd (good data)");
+    fails += ut_assert(hc_SLL_dataRemove(&pSentinel, &dummyData, data_equality_func) == true, "SLL dataRemove (good sent./data/comp. func.)");
+    fails += ut_assert(hc_SLL_dataRemove(&pSentinel, &dummyData, data_equality_func) == false, "SLL dataRemove (data already removed)");
+
+    hc_SLL_destroy(&pSentinel, NULL);
+
+    pSentinel = hc_SLL_create();
+
+    int data1 = 1;
+    int data2 = 2;
+    int data3 = 3;
+    int expectedResult = data1 + data2 + data3;
+    hc_SLL_dataAdd(&pSentinel, &data1);
+    hc_SLL_dataAdd(&pSentinel, &data2);
+    hc_SLL_dataAdd(&pSentinel, &data3);
+
+    hc_SLL_destroy(&pSentinel, data_destructor_func);
+
+    fails += ut_assert(dataDestructorCount == expectedResult, "SLL destroy (using data destructor)");
+    dataDestructorCount = 0;
+
+    pSentinel = hc_SLL_create();
+
+    int a = 5;
+    int b = 5;
+
+    hc_SLL_dataAdd(&pSentinel, &a);
+    hc_SLL_dataAdd(&pSentinel, &b);
+
+    hc_SLL_dataRemove(&pSentinel, &a, NULL);
+
+    hc_SLL_destroy(&pSentinel, data_destructor_func);
+
+    fails += ut_assert(dataDestructorCount == b, "SLL dataRemove (ptr compare not by value)");
+
+    return fails;
+}

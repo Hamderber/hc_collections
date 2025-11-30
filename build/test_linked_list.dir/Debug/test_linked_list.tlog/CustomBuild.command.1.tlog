@@ -1,0 +1,10 @@
+^C:\USERS\KEVIN\DESKTOP\PROGRAMMING\C\HC_COLLECTIONS\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/kevin/Desktop/Programming/C/hc_collections -BC:/Users/kevin/Desktop/Programming/C/hc_collections/build --check-stamp-file C:/Users/kevin/Desktop/Programming/C/hc_collections/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

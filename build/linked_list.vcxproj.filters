@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\kevin\Desktop\Programming\C\hc_collections\tests\linked_list.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\kevin\Desktop\Programming\C\hc_collections\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{77A63D1D-9A9A-3D18-B3CE-2C1E1A210597}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
