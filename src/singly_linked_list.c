@@ -25,7 +25,7 @@ HC_SinglyLinkedList_t *hc_SLL_nodeNew(void *pData)
     return pNode;
 }
 
-static inline bool hc_SLL_nodeIsSentinel(HC_SinglyLinkedList_t *pNode)
+bool hc_SLL_nodeIsSentinel(HC_SinglyLinkedList_t *pNode)
 {
     // Sentinel nodes will always have no data
     return pNode && !pNode->pData;
@@ -57,7 +57,30 @@ bool hc_SLL_dataAdd(HC_SinglyLinkedList_t **ppSentinel, void *pData)
     return hc_SLL_nodeAdd(ppSentinel, pNode);
 }
 
-static inline bool hc_SLL_nodeDelink(HC_SinglyLinkedList_t **ppNode)
+bool hc_SLL_nodeInsertAfter(HC_SinglyLinkedList_t *pNode, HC_SinglyLinkedList_t *pAdd)
+{
+    if (!pNode || hc_SLL_nodeIsSentinel(pNode) || !pAdd || hc_SLL_nodeIsSentinel(pAdd))
+        return false;
+
+    pAdd->pNext = pNode->pNext;
+    pNode->pNext = pAdd;
+
+    return true;
+}
+
+bool hc_SLL_dataInsertAfter(HC_SinglyLinkedList_t *pNode, void *pData)
+{
+    if (!pNode || hc_SLL_nodeIsSentinel(pNode) || !pData)
+        return false;
+
+    HC_SinglyLinkedList_t *pAdd = hc_SLL_nodeNew(pData);
+    if (!pAdd)
+        return false;
+
+    return hc_SLL_nodeInsertAfter(pNode, pAdd);
+}
+
+bool hc_SLL_nodeDetatch(HC_SinglyLinkedList_t **ppNode)
 {
     if (!ppNode || !*ppNode || hc_SLL_nodeIsSentinel(*ppNode))
         return false;
@@ -81,7 +104,7 @@ bool hc_SLL_nodeRemove(HC_SinglyLinkedList_t **ppSentinel, HC_SinglyLinkedList_t
     if (!*ppCurrent)
         return false;
 
-    return hc_SLL_nodeDelink(ppCurrent);
+    return hc_SLL_nodeDetatch(ppCurrent);
 }
 
 bool hc_SLL_dataRemove(HC_SinglyLinkedList_t **ppSentinel, void *pData, HC_LeftRightCompare_Func data_equality_func)
@@ -104,10 +127,22 @@ bool hc_SLL_dataRemove(HC_SinglyLinkedList_t **ppSentinel, void *pData, HC_LeftR
     if (!*ppCurrent)
         return false;
 
-    return hc_SLL_nodeDelink(ppCurrent);
+    return hc_SLL_nodeDetatch(ppCurrent);
 }
 
-bool hc_SLL_destroy(HC_SinglyLinkedList_t **ppSentinel, HC_DataDestructor data_destructor_func)
+bool hc_SLL_nodeDestroy(HC_SinglyLinkedList_t *pNode, HC_DataDestructor_Func data_destructor_func)
+{
+    if (!pNode || hc_SLL_nodeIsSentinel(pNode))
+        return false;
+
+    if (data_destructor_func && pNode->pData)
+        data_destructor_func(pNode->pData);
+
+    free(pNode);
+    return true;
+}
+
+bool hc_SLL_destroy(HC_SinglyLinkedList_t **ppSentinel, HC_DataDestructor_Func data_destructor_func)
 {
     if (!ppSentinel || !*ppSentinel)
         return false;
@@ -120,45 +155,12 @@ bool hc_SLL_destroy(HC_SinglyLinkedList_t **ppSentinel, HC_DataDestructor data_d
     {
         HC_SinglyLinkedList_t *pNext = pNode->pNext;
 
-        if (data_destructor_func && pNode->pData)
-            data_destructor_func(pNode->pData);
+        hc_SLL_nodeDestroy(pNode, data_destructor_func);
 
-        free(pNode);
         pNode = pNext;
     }
 
     *ppSentinel = NULL;
 
     return true;
-}
-
-#include "../tests/ut.h"
-int hc_SLLINTERNALUT(void)
-{
-    HC_SinglyLinkedList_t *pBad = NULL;
-    int fails = 0;
-    int dummyData = 5;
-
-    HC_SinglyLinkedList_t *pSentinel = hc_SLL_create();
-    fails += ut_assert(hc_SLL_nodeIsSentinel(NULL) == false, "SLL nodeIsSentinel (NULL sentinel)");
-    fails += ut_assert(hc_SLL_nodeIsSentinel(pSentinel) == true, "SLL nodeIsSentinel (good sentinel)");
-    pSentinel->pData = &dummyData;
-
-    fails += ut_assert(hc_SLL_nodeIsSentinel(pSentinel) == false, "SLL nodeIsSentinel (sentinel w/ dummy data)");
-    hc_SLL_destroy(&pSentinel, NULL);
-
-    HC_SinglyLinkedList_t *pNode = hc_SLL_nodeNew(&dummyData);
-    pSentinel = hc_SLL_create();
-    hc_SLL_nodeAdd(&pSentinel, pNode);
-
-    fails += ut_assert(hc_SLL_nodeDelink(&pSentinel) == false, "SLL nodeDelink (sentinel)");
-    fails += ut_assert(hc_SLL_nodeDelink(NULL) == false, "SLL nodeDelink (NULL)");
-    fails += ut_assert(hc_SLL_nodeDelink(&pBad) == false, "SLL nodeDelink (&NULL)");
-
-    HC_SinglyLinkedList_t **ppLink = &pSentinel->pNext;
-    fails += ut_assert(hc_SLL_nodeDelink(ppLink) == true, "SLL nodeDelink (good node)");
-    fails += ut_assert(pSentinel->pNext == NULL, "SLL nodeDelink (verify updated)");
-    fails += ut_assert(pNode->pNext == NULL, "SLL nodeDelink (verify cleared pNext)");
-
-    return fails;
 }

@@ -17,10 +17,29 @@ bool data_equality_func(void *pDataLeft, void *pDataRight)
 int main(void)
 {
     int fails = 0;
+    int dummyData = 5;
     HC_SinglyLinkedList_t *pSentinel = hc_SLL_create();
     HC_SinglyLinkedList_t *pBad = NULL;
 
-    fails += hc_SLLINTERNALUT();
+    fails += ut_assert(hc_SLL_nodeIsSentinel(NULL) == false, "SLL nodeIsSentinel (NULL sentinel)");
+    fails += ut_assert(hc_SLL_nodeIsSentinel(pSentinel) == true, "SLL nodeIsSentinel (good sentinel)");
+    pSentinel->pData = &dummyData;
+
+    fails += ut_assert(hc_SLL_nodeIsSentinel(pSentinel) == false, "SLL nodeIsSentinel (sentinel w/ dummy data)");
+    hc_SLL_destroy(&pSentinel, NULL);
+
+    HC_SinglyLinkedList_t *pNode = hc_SLL_nodeNew(&dummyData);
+    pSentinel = hc_SLL_create();
+    hc_SLL_nodeAdd(&pSentinel, pNode);
+
+    fails += ut_assert(hc_SLL_nodeDetatch(&pSentinel) == false, "SLL nodeDelink (sentinel)");
+    fails += ut_assert(hc_SLL_nodeDetatch(NULL) == false, "SLL nodeDelink (NULL)");
+    fails += ut_assert(hc_SLL_nodeDetatch(&pBad) == false, "SLL nodeDelink (&NULL)");
+
+    HC_SinglyLinkedList_t **ppLink = &pSentinel->pNext;
+    fails += ut_assert(hc_SLL_nodeDetatch(ppLink) == true, "SLL nodeDelink (good node)");
+    fails += ut_assert(pSentinel->pNext == NULL, "SLL nodeDelink (verify updated)");
+    fails += ut_assert(pNode->pNext == NULL, "SLL nodeDelink (verify cleared pNext)");
 
     fails += ut_assert(pSentinel != NULL, "SLL sentinelCreate");
 
@@ -30,8 +49,7 @@ int main(void)
 
     pSentinel = hc_SLL_create();
 
-    int dummyData = 5;
-    HC_SinglyLinkedList_t *pNode = hc_SLL_nodeNew(&dummyData);
+    pNode = hc_SLL_nodeNew(&dummyData);
     fails += ut_assert(pNode != NULL, "SLL nodeNew (good data)");
     fails += ut_assert(hc_SLL_nodeNew(NULL) == NULL, "SLL nodeNew (NULL data)");
     fails += ut_assert(*(int *)(pNode->pData) == dummyData, "SLL nodeNew pData assignment");
@@ -112,6 +130,53 @@ int main(void)
     hc_SLL_destroy(&pSentinel, data_destructor_func);
 
     fails += ut_assert(dataDestructorCount == b, "SLL dataRemove (ptr compare not by value)");
+
+    hc_SLL_destroy(&pSentinel, NULL);
+
+    pSentinel = hc_SLL_create();
+
+    int n1 = 1;
+    int n2 = 4;
+    int n3 = 7;
+    HC_SinglyLinkedList_t *pNode1 = hc_SLL_nodeNew(&n1);
+    HC_SinglyLinkedList_t *pNode2 = hc_SLL_nodeNew(&n2);
+    HC_SinglyLinkedList_t *pNode3 = hc_SLL_nodeNew(&n3);
+
+    fails += ut_assert(hc_SLL_nodeInsertAfter(pSentinel, pNode1) == false, "SLL nodeInsertAfter (sentinel)");
+    fails += ut_assert(hc_SLL_nodeInsertAfter(NULL, pNode1) == false, "SLL nodeInsertAfter (bad node)");
+    hc_SLL_nodeAdd(&pSentinel, pNode1);
+    fails += ut_assert(hc_SLL_nodeInsertAfter(pNode1, pNode2) == true, "SLL nodeInsertAfter (good node)");
+    int sumValidation = *(int *)(pSentinel->pNext->pNext->pData);
+    expectedResult = 4;
+    fails += ut_assert(sumValidation == expectedResult, "SSL nodeInsertAfter (sumValidation = 4)");
+
+    fails += ut_assert(hc_SLL_nodeInsertAfter(pNode1, pNode3) == true, "SLL nodeInsertAfter (good node)");
+    sumValidation = *(int *)(pSentinel->pNext->pNext->pData);
+    expectedResult = 7;
+    fails += ut_assert(sumValidation == expectedResult, "SSL nodeInsertAfter (sumValidation = 7)");
+
+    hc_SLL_destroy(&pSentinel, NULL);
+
+    pSentinel = hc_SLL_create();
+    pNode1 = hc_SLL_nodeNew(&n1);
+    pNode2 = hc_SLL_nodeNew(&n2);
+    pNode3 = hc_SLL_nodeNew(&n3);
+
+    fails += ut_assert(hc_SLL_dataInsertAfter(pSentinel, &n1) == false, "SLL dataInsertAfter (sentinel)");
+    fails += ut_assert(hc_SLL_dataInsertAfter(NULL, &n1) == false, "SLL dataInsertAfter (bad node)");
+    hc_SLL_nodeAdd(&pSentinel, pNode1);
+    fails += ut_assert(hc_SLL_dataInsertAfter(pNode1, NULL) == false, "SLL dataInsertAfter (bad data)");
+    fails += ut_assert(hc_SLL_dataInsertAfter(pNode1, &n2) == true, "SLL dataInsertAfter (good node)");
+    sumValidation = *(int *)(pSentinel->pNext->pNext->pData);
+    expectedResult = 4;
+    fails += ut_assert(sumValidation == expectedResult, "SSL dataInsertAfter (sumValidation = 4)");
+
+    fails += ut_assert(hc_SLL_dataInsertAfter(pNode1, &n3) == true, "SLL dataInsertAfter (good node)");
+    sumValidation = *(int *)(pSentinel->pNext->pNext->pData);
+    expectedResult = 7;
+    fails += ut_assert(sumValidation == expectedResult, "SSL dataInsertAfter (sumValidation = 7)");
+
+    hc_SLL_destroy(&pSentinel, NULL);
 
     return fails;
 }

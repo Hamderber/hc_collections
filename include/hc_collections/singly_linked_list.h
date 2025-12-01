@@ -18,6 +18,12 @@ HC_SinglyLinkedList_t *hc_SLL_create(void);
 /// @return New HC_SinglyLinkedList_t node [HEAP] or NULL if alloc fails or pData is NULL.
 HC_SinglyLinkedList_t *hc_SLL_nodeNew(void *pData);
 
+/// @brief Determines if the passed node is considered a sentinel node, which has dummy data is used to track the instance of
+/// the linked list itself.
+/// @param pNode The node that will be checked for the sentinel pattern.
+/// @return If the node is a sentinel or not.
+bool hc_SLL_nodeIsSentinel(HC_SinglyLinkedList_t *pNode);
+
 /// @brief Adds the passed pNode to the provided linked list ppSentinel.
 /// @param ppSentinel The root node used to track the linked list itself.
 /// @param pNode The node to add to the linked list.
@@ -29,6 +35,18 @@ bool hc_SLL_nodeAdd(HC_SinglyLinkedList_t **ppSentinel, HC_SinglyLinkedList_t *p
 /// @param pData The data that will be tracked inside the newly created node that will be added to the linked list.
 /// @return Result of attempting to add the data inside a new node. True only when a valid node is added to a valid linked list.
 bool hc_SLL_dataAdd(HC_SinglyLinkedList_t **ppSentinel, void *pData);
+
+/// @brief Inserts the pAdd node after the passed pNode in the linked list.
+/// @param pNode Node that already exists in the linked list. NOT elligible to be a sentinel node. Use hc_SLL_nodeAdd for that.
+/// @param pAdd Node to add into the linked list after pNode.
+/// @return Result of attempting to insert the node into the linked list. True only when a valid node is inserted after a valid node.
+bool hc_SLL_nodeInsertAfter(HC_SinglyLinkedList_t *pNode, HC_SinglyLinkedList_t *pAdd);
+
+/// @brief Creates a new node with the passed data and adds it after the passed pNode in the linked list.
+/// @param pNode Node that already exists in the linked list. NOT elligible to be a sentinel node. Use hc_SLL_dataAdd for that.
+/// @param pData The data that will be tracked inside the newly created node that will be added to the linked list.
+/// @return Result of attempting to add the data inside a new node. True only when a valid node is added to a valid linked list.
+bool hc_SLL_dataInsertAfter(HC_SinglyLinkedList_t *pNode, void *pData);
 
 /// @brief Walks the provided linked list until pData is found. If a data_equality_func is passed, that is used to determine if
 /// there is a found match when comparing pDatas. Otherwise, the pointers themselves are compared. The data is not destroyed/owned
@@ -47,13 +65,22 @@ bool hc_SLL_dataRemove(HC_SinglyLinkedList_t **ppSentinel, void *pData, HC_LeftR
 /// removed.
 bool hc_SLL_nodeRemove(HC_SinglyLinkedList_t **ppSentinel, HC_SinglyLinkedList_t *pNode);
 
+/// @brief Removes the node from the linked list at its current location. The rest of the ordering is perserved.
+/// @param ppNode Node to remove.
+/// @return Result of attempting to remove the node from the linked list. True only when a node is successfully removed.
+bool hc_SLL_nodeDetatch(HC_SinglyLinkedList_t **ppNode);
+
+/// @brief Calls the data_destructor_func on the node's data and frees the node's memory allocation.
+/// @param pNode Node to be destroyed.
+/// @param data_destructor_func The function used to destroy the data of each pNode. This can be NULL if the data isn't owned
+/// by the linked list.
+/// @return Result of attempting to destroy the node and its data.
+bool hc_SLL_nodeDestroy(HC_SinglyLinkedList_t *pNode, HC_DataDestructor_Func data_destructor_func);
+
 /// @brief Walks the provided linked list and calls the data_destructor_func on each node's data. Frees the linked list
 /// once complete.
 /// @param ppSentinel The root node used to track the linked list itself.
-/// @param data_destructor_func The function used to destroy the data of each pNode.
+/// @param data_destructor_func The function used to destroy the data of each pNode. This can be NULL if the data isn't owned
+/// by the linked list.
 /// @return Result of destroying the linked list. Only true if a valid linked list was provided and successfully destroyed.
-bool hc_SLL_destroy(HC_SinglyLinkedList_t **ppSentinel, HC_DataDestructor data_destructor_func);
-
-/// @brief Runs the internal unit tests to validate feature compliance.
-/// @return Number of internal unit test failures.
-int hc_SLLINTERNALUT(void);
+bool hc_SLL_destroy(HC_SinglyLinkedList_t **ppSentinel, HC_DataDestructor_Func data_destructor_func);
