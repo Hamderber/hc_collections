@@ -35,7 +35,7 @@ bool hc_DLL_nodeIsSentinel(HC_DoublyLinkedList_t *pNode)
 
 bool hc_DLL_nodeAdd(HC_DoublyLinkedList_t **ppSentinel, HC_DoublyLinkedList_t *pNode)
 {
-    if (!ppSentinel || !*ppSentinel || !hc_DLL_nodeIsSentinel(*ppSentinel) || !pNode || hc_DLL_nodeIsSentinel(pNode))
+    if (!ppSentinel || !*ppSentinel || !hc_DLL_nodeIsSentinel(*ppSentinel) || !pNode || hc_DLL_nodeIsSentinel(pNode) || pNode->pPrev)
         return false;
 
     HC_DoublyLinkedList_t *pCurrent = *ppSentinel;
@@ -65,9 +65,14 @@ bool hc_DLL_nodeInsertAfter(HC_DoublyLinkedList_t *pNode, HC_DoublyLinkedList_t 
     if (!pNode || hc_DLL_nodeIsSentinel(pNode) || !pAdd || hc_DLL_nodeIsSentinel(pAdd))
         return false;
 
-    pAdd->pNext = pNode->pNext;
-    pNode->pNext = pAdd;
+    HC_DoublyLinkedList_t *pOldNext = pNode->pNext;
+
     pAdd->pPrev = pNode;
+    pAdd->pNext = pOldNext;
+
+    pNode->pNext = pAdd;
+    if (pOldNext)
+        pOldNext->pPrev = pAdd;
 
     return true;
 }
@@ -86,7 +91,7 @@ bool hc_DLL_dataInsertAfter(HC_DoublyLinkedList_t *pNode, void *pData)
 
 bool hc_DLL_nodeDetatch(HC_DoublyLinkedList_t **ppNode)
 {
-    if (!ppNode || !*ppNode || hc_DLL_nodeIsSentinel(*ppNode))
+    if (!ppNode || !*ppNode || hc_DLL_nodeIsSentinel(*ppNode) || ((!(*ppNode)->pNext) && !(*ppNode)->pPrev))
         return false;
 
     HC_DoublyLinkedList_t *pRemove = *ppNode;
@@ -98,8 +103,6 @@ bool hc_DLL_nodeDetatch(HC_DoublyLinkedList_t **ppNode)
 
     if (pNext)
         pNext->pPrev = pPrev;
-
-    *ppNode = pNext ? pNext : pPrev;
 
     pRemove->pNext = NULL;
     pRemove->pPrev = NULL;

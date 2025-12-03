@@ -25,7 +25,8 @@ HC_DoublyLinkedList_t *hc_DLL_nodeNew(void *pData);
 /// @return If the node is a sentinel or not.
 bool hc_DLL_nodeIsSentinel(HC_DoublyLinkedList_t *pNode);
 
-/// @brief Adds the passed pNode to the provided linked list ppSentinel.
+/// @brief Adds the passed pNode to the provided linked list ppSentinel. A node that still has a pPrev was impropely detached
+/// and will not be added to the list.
 /// @param ppSentinel The root node used to track the linked list itself.
 /// @param pNode The node to add to the linked list.
 /// @return Result of attempting to add the node. True only when a valid node is added to a valid linked list.
