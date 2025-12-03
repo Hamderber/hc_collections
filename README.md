@@ -5,10 +5,10 @@ A library for handling collections in C
 # Included collection types
 
 - Singly Linked List
+- Doubly Linked List
 
 # Planned
 
-- Doubly Linked List
 - Singly Linked Set
 - Doubly Linked Set
 - Hash Set
