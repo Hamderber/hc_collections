@@ -148,12 +148,12 @@ int main(void)
     fails += ut_assert(hc_SLL_nodeInsertAfter(pNode1, pNode2) == true, "SLL nodeInsertAfter (good node)");
     int sumValidation = *(int *)(pSentinel->pNext->pNext->pData);
     expectedResult = 4;
-    fails += ut_assert(sumValidation == expectedResult, "SSL nodeInsertAfter (sumValidation = 4)");
+    fails += ut_assert(sumValidation == expectedResult, "SLL nodeInsertAfter (sumValidation = 4)");
 
     fails += ut_assert(hc_SLL_nodeInsertAfter(pNode1, pNode3) == true, "SLL nodeInsertAfter (good node)");
     sumValidation = *(int *)(pSentinel->pNext->pNext->pData);
     expectedResult = 7;
-    fails += ut_assert(sumValidation == expectedResult, "SSL nodeInsertAfter (sumValidation = 7)");
+    fails += ut_assert(sumValidation == expectedResult, "SLL nodeInsertAfter (sumValidation = 7)");
 
     hc_SLL_destroy(&pSentinel, NULL);
 
@@ -169,12 +169,12 @@ int main(void)
     fails += ut_assert(hc_SLL_dataInsertAfter(pNode1, &n2) == true, "SLL dataInsertAfter (good node)");
     sumValidation = *(int *)(pSentinel->pNext->pNext->pData);
     expectedResult = 4;
-    fails += ut_assert(sumValidation == expectedResult, "SSL dataInsertAfter (sumValidation = 4)");
+    fails += ut_assert(sumValidation == expectedResult, "SLL dataInsertAfter (sumValidation = 4)");
 
     fails += ut_assert(hc_SLL_dataInsertAfter(pNode1, &n3) == true, "SLL dataInsertAfter (good node)");
     sumValidation = *(int *)(pSentinel->pNext->pNext->pData);
     expectedResult = 7;
-    fails += ut_assert(sumValidation == expectedResult, "SSL dataInsertAfter (sumValidation = 7)");
+    fails += ut_assert(sumValidation == expectedResult, "SLL dataInsertAfter (sumValidation = 7)");
 
     hc_SLL_destroy(&pSentinel, NULL);
 
